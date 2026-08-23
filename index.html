@@ -12,16 +12,24 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
 
-    <!-- Instant Theme Detection Script -->
+    <!-- Instant Theme Detection Script — harus synchronous, sebelum CSS load -->
+    <!-- Mencegah FOUC (Flash of White) dengan langsung set background color -->
     <script>
       (function() {
         try {
           var savedTheme = localStorage.getItem('theme');
           var isDark = savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          var root = document.documentElement;
           if (isDark) {
-            document.documentElement.classList.add('dark');
+            root.classList.add('dark');
+            // zinc-950 = #09090b — set langsung sebelum CSS load
+            root.style.backgroundColor = '#09090b';
+            root.style.colorScheme = 'dark';
           } else {
-            document.documentElement.classList.remove('dark');
+            root.classList.remove('dark');
+            // white
+            root.style.backgroundColor = '#ffffff';
+            root.style.colorScheme = 'light';
           }
         } catch (e) {}
       })();

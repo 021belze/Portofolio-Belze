@@ -57,10 +57,19 @@ export default function Projects() {
 
     updateDistance()
     const timer = setTimeout(updateDistance, 80)
-    window.addEventListener('resize', updateDistance)
+
+    // Debounce resize — cegah ratusan recalculation saat drag resize window
+    let resizeTimer
+    const handleResize = () => {
+      clearTimeout(resizeTimer)
+      resizeTimer = setTimeout(updateDistance, 100)
+    }
+
+    window.addEventListener('resize', handleResize, { passive: true })
     return () => {
       clearTimeout(timer)
-      window.removeEventListener('resize', updateDistance)
+      clearTimeout(resizeTimer)
+      window.removeEventListener('resize', handleResize)
     }
   }, [filteredProjects, filter])
 

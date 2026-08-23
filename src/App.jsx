@@ -51,13 +51,38 @@ function App() {
     window.lenis = lenis
 
     let animationFrameId
+    let isRunning = false
 
     function raf(time) {
       lenis.raf(time)
       animationFrameId = requestAnimationFrame(raf)
     }
 
-    animationFrameId = requestAnimationFrame(raf)
+    function startRaf() {
+      if (!isRunning) {
+        isRunning = true
+        animationFrameId = requestAnimationFrame(raf)
+      }
+    }
+
+    function stopRaf() {
+      if (isRunning) {
+        isRunning = false
+        cancelAnimationFrame(animationFrameId)
+      }
+    }
+
+    // Pause RAF saat tab di-background untuk hemat CPU
+    const handleVisibility = () => {
+      if (document.hidden) {
+        stopRaf()
+      } else {
+        startRaf()
+      }
+    }
+
+    startRaf()
+    document.addEventListener('visibilitychange', handleVisibility)
 
     // Smooth scroll saat klik anchor link internal (#home, #about, #projects, #contact, dll)
     const handleAnchorClick = (e) => {
@@ -86,7 +111,8 @@ function App() {
 
     return () => {
       document.removeEventListener('click', handleAnchorClick)
-      cancelAnimationFrame(animationFrameId)
+      document.removeEventListener('visibilitychange', handleVisibility)
+      stopRaf()
       lenis.destroy()
       delete window.lenis
     }

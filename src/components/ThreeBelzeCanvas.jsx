@@ -1,4 +1,4 @@
-import React, { useRef, useMemo, Suspense } from "react";
+import React, { useRef, useMemo, Suspense, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Float, Text3D, Center } from "@react-three/drei";
 import * as THREE from "three";
@@ -24,7 +24,7 @@ function FloatingParticles({ isDark }) {
     <group ref={particlesRef}>
       {/* Orbital Ring 1 */}
       <mesh ref={ringRef1} position={[-2.8, 0.4, -0.5]}>
-        <torusGeometry args={[0.45, 0.02, 16, 64]} />
+        <torusGeometry args={[0.45, 0.02, 12, 48]} />
         <meshStandardMaterial
           color={isDark ? "#38bdf8" : "#2563eb"}
           metalness={0.8}
@@ -36,7 +36,7 @@ function FloatingParticles({ isDark }) {
 
       {/* Orbital Ring 2 */}
       <mesh ref={ringRef2} position={[2.9, -0.3, 0.2]}>
-        <torusGeometry args={[0.35, 0.018, 16, 64]} />
+        <torusGeometry args={[0.35, 0.018, 12, 48]} />
         <meshStandardMaterial
           color={isDark ? "#818cf8" : "#4f46e5"}
           metalness={0.8}
@@ -111,12 +111,12 @@ function Belze3DModel({ isDark }) {
               font="/fonts/helvetiker_bold.typeface.json"
               size={1.5}
               height={0.36}
-              curveSegments={32}
+              curveSegments={16}
               bevelEnabled
               bevelThickness={0.05}
               bevelSize={0.03}
               bevelOffset={0}
-              bevelSegments={8}
+              bevelSegments={5}
               letterSpacing={0.08}
             >
               BELZE
@@ -138,10 +138,27 @@ function Belze3DModel({ isDark }) {
 }
 
 export default function ThreeBelzeCanvas({ isDark = true }) {
+  const wrapperRef = useRef(null)
+
+  // Saat F5/reload: browser destroy WebGL context → canvas tampil jadi kotak putih
+  // Fix: langsung hide wrapper sebelum context hilang
+  useEffect(() => {
+    const handleUnload = () => {
+      if (wrapperRef.current) {
+        wrapperRef.current.style.opacity = '0'
+      }
+    }
+    window.addEventListener('beforeunload', handleUnload)
+    return () => window.removeEventListener('beforeunload', handleUnload)
+  }, [])
+
   return (
-    <div className="w-full h-56 sm:h-64 md:h-80 cursor-grab active:cursor-grabbing select-none flex items-center justify-center relative">
+    <div
+      ref={wrapperRef}
+      className="w-full h-56 sm:h-64 md:h-80 cursor-grab active:cursor-grabbing select-none flex items-center justify-center relative"
+    >
       <Canvas
-        dpr={[1, 1.5]}
+        dpr={[1, 1.2]}
         gl={{ powerPreference: "high-performance", antialias: true }}
         camera={{ position: [0, 0, 5], fov: 42 }}
       >

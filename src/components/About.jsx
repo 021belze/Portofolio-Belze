@@ -38,9 +38,26 @@ export default function About() {
         setTime(new Date().toLocaleTimeString())
       }
     }
+
     updateTime()
-    const interval = setInterval(updateTime, 1000)
-    return () => clearInterval(interval)
+    let interval = setInterval(updateTime, 1000)
+
+    // Pause interval saat tab di-background untuk hemat CPU
+    const handleVisibility = () => {
+      if (document.hidden) {
+        clearInterval(interval)
+      } else {
+        updateTime() // Langsung update saat kembali ke tab
+        interval = setInterval(updateTime, 1000)
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibility)
+
+    return () => {
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', handleVisibility)
+    }
   }, [])
 
   return (

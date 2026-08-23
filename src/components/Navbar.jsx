@@ -16,27 +16,36 @@ export default function Navbar({ isDark, toggleDarkMode }) {
   const isProjectsSection = activeSection === 'projects'
 
   useEffect(() => {
+    let rafId
+
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 40)
+      // RAF throttle: maksimal 1 DOM-query per frame
+      cancelAnimationFrame(rafId)
+      rafId = requestAnimationFrame(() => {
+        setIsScrolled(window.scrollY > 40)
 
-      const sections = ['home', 'about', 'projects', 'contact']
-      const scrollPosition = window.scrollY + 120
+        const sections = ['home', 'about', 'projects', 'contact']
+        const scrollPosition = window.scrollY + 120
 
-      for (const section of sections) {
-        const el = document.getElementById(section)
-        if (el) {
-          const top = el.offsetTop
-          const height = el.offsetHeight
-          if (scrollPosition >= top && scrollPosition < top + height) {
-            setActiveSection(section)
-            break
+        for (const section of sections) {
+          const el = document.getElementById(section)
+          if (el) {
+            const top = el.offsetTop
+            const height = el.offsetHeight
+            if (scrollPosition >= top && scrollPosition < top + height) {
+              setActiveSection(section)
+              break
+            }
           }
         }
-      }
+      })
     }
 
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      cancelAnimationFrame(rafId)
+    }
   }, [])
 
   // Reset miniExpanded when leaving Projects section

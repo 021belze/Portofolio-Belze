@@ -4,8 +4,8 @@ import { GithubIcon } from './Icons'
 
 export default function ProjectCard3D({ project, onSelect }) {
   const cardRef = useRef(null)
+  const glareRef = useRef(null)
   const [rotations, setRotations] = useState({ x: 0, y: 0 })
-  const [glare, setGlare] = useState({ x: 50, y: 50, opacity: 0 })
 
   const handleMouseMove = (e) => {
     if (!cardRef.current) return
@@ -21,16 +21,22 @@ export default function ProjectCard3D({ project, onSelect }) {
     const rotateY = ((x - centerX) / centerX) * 6
 
     setRotations({ x: rotateX, y: rotateY })
-    setGlare({
-      x: (x / rect.width) * 100,
-      y: (y / rect.height) * 100,
-      opacity: 0.16,
-    })
+
+    // Direct DOM update untuk glare — zero re-render overhead
+    if (glareRef.current) {
+      const gx = (x / rect.width) * 100
+      const gy = (y / rect.height) * 100
+      glareRef.current.style.opacity = '1'
+      glareRef.current.style.background = `radial-gradient(450px circle at ${gx}% ${gy}%, rgba(59,130,246,0.2), transparent 70%)`
+    }
   }
 
   const handleMouseLeave = () => {
     setRotations({ x: 0, y: 0 })
-    setGlare((prev) => ({ ...prev, opacity: 0 }))
+    // Direct DOM update untuk hide glare
+    if (glareRef.current) {
+      glareRef.current.style.opacity = '0'
+    }
   }
 
   return (
@@ -49,13 +55,11 @@ export default function ProjectCard3D({ project, onSelect }) {
         }}
         className="project-card relative group rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200/90 dark:border-zinc-800 p-5 sm:p-6 shadow-[0_10px_30px_rgba(0,0,0,0.04)] hover:shadow-[0_20px_45px_rgba(0,0,0,0.12)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.4)] dark:hover:shadow-[0_20px_50px_rgba(0,0,0,0.7)] transition-shadow duration-300 overflow-hidden flex flex-col justify-between h-full text-left cursor-pointer will-change-transform transform-gpu"
       >
-        {/* Spotlight Glare Effect */}
+        {/* Spotlight Glare Effect — controlled via ref, zero re-render */}
         <div
-          className="pointer-events-none absolute -inset-px transition-opacity duration-300 rounded-3xl"
-          style={{
-            opacity: glare.opacity,
-            background: `radial-gradient(450px circle at ${glare.x}% ${glare.y}%, rgba(59,130,246,0.2), transparent 70%)`,
-          }}
+          ref={glareRef}
+          className="pointer-events-none absolute -inset-px rounded-3xl"
+          style={{ opacity: 0, transition: 'opacity 0.3s ease' }}
         />
 
         <div className="flex flex-col flex-1 min-h-0">
